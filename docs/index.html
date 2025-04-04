@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linus's Image Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #000000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 0.05px solid #1a1a1a;
+            width: 100%;
+            max-width: 480px;
+            padding: 80px 50px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #fff;
+            font-weight: 500;
+            text-align: center;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 0;
+            font-size: 1rem;
+            border: 0.2px solid #1a1a1a;
+            border-radius: 8px;
+            background-color: #0a0a09;
+            color: #fff;
+            outline: none;
+            transition: background-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            background-color: #11110f;
+        }
+        button {
+            background-color: #fff;
+            color: #000000;
+            display: none;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            width: 100%;
+            margin-top: 0px;
+        }
+        button:disabled {
+            background-color: #fff;
+            cursor: not-allowed;
+            color: #bbb;
+        }
+
+        button:disabled:hover {
+            background-color: #fff;
+            transform: translateY(0px);
+        }
+        button:disabled:hover {
+            transform: translateY(0px);
+        }
+        button:hover {
+            background-color: #c0bfbf;
+        }
+        .agreement {
+            font-size: 0.9rem;
+            color: #bbb;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .agreement label {
+            color: #aaa;
+        }
+        .agreement a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .agreement a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #fff;
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        img {
+            max-width: 100%;
+            margin-top: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Linus's Image Generator</h1>
+
+        <div class="input-group">
+            <input type="text" id="prompt" placeholder="Enter your prompt" />
+            <button id="generateButton" onclick="generateImage()" disabled>Generate</button>
+        </div>
+
+        <div class="agreement">
+            <label>
+                <input type="checkbox" id="agreeTerms" /> I agree to the
+                <a href="https://github.com/linuskangau/ai-generator/blob/main/README.md" target="_blank">Terms of Service</a> and
+                <a href="https://github.com/linuskangau/ai-generator/blob/main/README.md" target="_blank">Privacy Policy</a>.
+            </label>
+        </div>
+
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Generating image...</p>
+        </div>
+
+        <img id="generatedImage" src="" alt="Generated Image">
+    </div>
+
+    <script>
+        document.getElementById("agreeTerms").addEventListener('change', function () {
+            document.getElementById("generateButton").disabled = !this.checked;
+        });
+
+        async function generateImage() {
+            const prompt = document.getElementById("prompt").value;
+            if (!prompt) return alert("Please enter a prompt!");
+
+            document.querySelector(".loading").style.display = "block";
+            document.getElementById("generatedImage").style.display = "none";
+            
+            const workerURL = "https://ai.linus-9f4.workers.dev/"; // Replace with your Worker URL if self-hosting. DO NOT use this one.
+            try {
+                const response = await fetch(workerURL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageURL = URL.createObjectURL(blob);
+                    document.getElementById("generatedImage").src = imageURL;
+                    document.getElementById("generatedImage").style.display = "block";
+                } else {
+                    alert(`Failed to generate image: ${response.statusText}`);
+                }
+            } catch (error) {
+                alert("An error occurred while generating the image.");
+            } finally {
+                document.querySelector(".loading").style.display = "none";
+            }
+        }
+
+        document.getElementById("agreeTerms").addEventListener('change', function () {
+            const generateButton = document.getElementById("generateButton");
+            if (this.checked) {
+                generateButton.disabled = false;
+                generateButton.style.display = "block";
+            } else {
+                generateButton.disabled = true;
+                generateButton.style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>
